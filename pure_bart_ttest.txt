@@ -1,0 +1,158 @@
+model {
+
+
+  mu_g_ref_log ~ dnorm(0,1) #overall average in risk taking
+  delta_g_ref ~ dnorm(0,1) # group difference in risk taking
+
+  mu_tau_log ~ dnorm(0,1) # overall average in consistency (for all subjects)
+  delta_tau ~ dnorm(0,1) # group difference in consistency
+
+  #------------------------------------------------------------------------------
+  #-------------- Group A Priors ------------------------------------------------
+  #------------------------------------------------------------------------------
+  # Mode (mu) priors for g_ref and tau parameters
+  # Model includes re-parameterisation of gamma distribution to get mode and sd
+  # Log transform included for implementation of hierarchical t.test
+  log(A.mu_g_ref) <- mu_g_ref_log - (delta_g_ref/2)
+  A.rate_g_ref <- (A.mu_g_ref + sqrt(A.mu_g_ref^2 + 4*A.sigma_g_ref^2)) / (2 * A.sigma_g_ref^2)  
+  A.shape_g_ref <- 1 + A.mu_g_ref * A.rate_g_ref
+
+  log(A.mu_tau) <- mu_tau_log - (delta_tau/2)
+  A.rate_tau <- (A.mu_tau + sqrt(A.mu_tau^2 + 4*A.sigma_tau^2)) / (2 * A.sigma_tau^2)  
+  A.shape_tau <- 1 + A.mu_tau * A.rate_tau
+
+  #------------------------------------------------------------------------------
+  #-------------- Group B Priors ------------------------------------------------
+  #------------------------------------------------------------------------------
+  # Mode (mu) priors for g_ref and tau parameters
+  # Model includes re-parameterisation of gamma distribution to get mode and sd
+  # Log transform included for implementation of hierarchical t.test
+  log(B.mu_g_ref) <- mu_g_ref_log + (delta_g_ref/2)
+  B.rate_g_ref <- (B.mu_g_ref + sqrt(B.mu_g_ref^2 + 4*B.sigma_g_ref^2)) / (2 * B.sigma_g_ref^2)  
+  B.shape_g_ref <- 1 + B.mu_g_ref * B.rate_g_ref
+
+  log(B.mu_tau) <- mu_tau_log + (delta_tau/2)
+  B.rate_tau <- (B.mu_tau + sqrt(B.mu_tau^2 + 4*B.sigma_tau^2)) / (2 * B.sigma_tau^2)  
+  B.shape_tau <- 1 + B.mu_tau * B.rate_tau
+
+  #------------------------------------------------------------------------------
+  #--------- Variance Priors ----------------------------------------------------
+  #------------------------------------------------------------------------------
+  # variance priors for g_ref and tau parameters
+  # Convert standard deviation in gamma distributions to precision
+  # Allows use of Jeffries prior dgamma(0.01,0.01)
+  
+  A.prec_g_ref ~ dgamma(.01,.01)
+  A.var_g_ref <- 1/A.prec_g_ref
+  A.sigma_g_ref <- sqrt(A.var_g_ref) 
+
+  A.prec_tau ~ dgamma(.01,.01)
+  A.var_tau <- 1/A.prec_tau
+  A.sigma_tau <- sqrt(A.var_tau)  #standard deviation. Square root of variance. 
+
+  B.prec_g_ref ~ dgamma(.01,.01)
+  B.var_g_ref <- 1/B.prec_g_ref
+  B.sigma_g_ref <- sqrt(B.var_g_ref) 
+
+  B.prec_tau ~ dgamma(.01,.01)
+  B.var_tau <- 1/B.prec_tau
+  B.sigma_tau <- sqrt(B.var_tau) 
+
+#-----------------------------------------------------------------------------
+#------------ subject level model --------------------------------------------
+#-----------------------------------------------------------------------------
+
+#------------------------- A Group -------------------------------------------------------------
+
+  for (s in 1:A.nsubs) {
+  
+    # subject level parameters. Assume gamma distribution for positively constrained params
+    A.g_ref[s] ~ dgamma(A.shape_g_ref,A.rate_g_ref) #risk propensity
+
+    A.tau[s] ~ dgamma(A.shape_tau,A.rate_tau) #behavioral consistency
+    
+    #---------------------------------------------------------------------------
+    # trial level model
+    for (t in 1:ntrials) {
+      
+      # option to assume probability doesn't vary - consider applying to delayed condition
+      # optimal flips set at trial level and not updated based on flip outcome
+      # A.omega[t,s] <- -A.g_ref[s]/(log(1-A.p[t,s]))
+      
+      #-------------------------------------------------------------------------
+      # choice level model
+      for (k in 1:A.nchoices[t,s]) {
+      
+        # optimal number of flips - decreases as a function of probability
+        # assumes probability judgement is objective, and updates with flips
+        # dynamic threshold
+        A.omega[k,t,s] <- -A.g_ref[s]/(log(1-A.p[k,t,s]))
+        
+        # probability of banking, given optimal number of flips
+        #---Decimal added to avoid "node inconsistent with parent" error--------
+        #exponential model converges on an integer, decimal added to prevent this
+        #solution described here
+        #https://stackoverflow.com/questions/37956257/node-inconsistent-with-p
+        
+          A.theta[k,t,s] <- 1-(1/(1.0000001+max(-15,min(15,exp(A.tau[s]*(k[t,s]-A.omega[k,t,s]))))))
+        
+        # NOTE THAT THE X-AXIS HERE IS NEGATIVE - this is why there is a 1 - ....
+        # DISTANCE BETWEEN CURRENT TRIAL (E.G. 2) AND OPTIMAL (E.G 8)
+        # SO STARTS AT NEGATIVE OPTIMAL, AND INCREASES TO 0
+        # THIS IS WHY TAU SHOULD BE POSITIVE !!!!!!!!!
+
+        # decision to flip (d=0) or bank (d=1) as bernoulli sample  
+        A.d[k,t,s] ~ dbern(A.theta[k,t,s])
+  
+      }
+    }
+  }
+
+#-------------------------- B Group -------------------------------------------------------------
+
+  for (s in 1:B.nsubs) {
+  
+    # subject level parameters. Assume gamma distribution for positively constrained params
+    B.g_ref[s] ~ dgamma(B.shape_g_ref,B.rate_g_ref) #risk propensity
+
+    B.tau[s] ~ dgamma(B.shape_tau,B.rate_tau) #behavioral consistency
+    
+    #---------------------------------------------------------------------------
+    # trial level model
+    for (t in 1:ntrials) {
+      
+      # option to assume probability doesn't vary - consider applying to delayed condition
+      # optimal flips set at trial level and not updated based on flip outcome
+      # B.omega[t,s] <- -B.g_ref[s]/(log(1-B.p[t,s]))
+      
+      #-------------------------------------------------------------------------
+      # choice level model
+      for (k in 1:B.nchoices[t,s]) {
+      
+        # optimal number of flips - decreases as a function of probability
+        # assumes probability judgement is objective, and updates with flips
+        B.omega[k,t,s] <- -B.g_ref[s]/(log(1-B.p[k,t,s]))
+        
+        # probability of banking, given optimal number of flips
+        #---Decimal added to avoid "node inconsistent with parent" error--------
+        #exponential model converges on an integer, decimal added to prevent this
+        #solution described here
+        #https://stackoverflow.com/questions/37956257/node-inconsistent-with-p
+        
+          B.theta[k,t,s] <- 1-(1/(1.0000001+max(-15,min(15,exp(B.tau[s]*(k[t,s]-B.omega[k,t,s]))))))
+        
+        # NOTE THAT THE X-AXIS HERE IS NEGATIVE - this is why there is a 1 - ....
+        # DISTANCE BETWEEN CURRENT TRIAL (E.G. 2) AND OPTIMAL (E.G 8)
+        # SO STARTS AT NEGATIVE OPTIMAL, AND INCREASES TO 0
+        # THIS IS WHY TAU SHOULD BE POSITIVE !!!!!!!!!
+
+        
+        # decision to flip (d=0) or bank (d=1) as bernoulli sample  
+        B.d[k,t,s] ~ dbern(B.theta[k,t,s])
+  
+      }
+    }
+  }
+
+
+}
