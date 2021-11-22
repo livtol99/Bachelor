@@ -1,6 +1,5 @@
 model {
 
-
   mu_g_ref_log ~ dnorm(0,1) #overall average in risk taking
   delta_g_ref ~ dnorm(0,1) # group difference in risk taking
 
