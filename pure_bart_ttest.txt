@@ -1,10 +1,10 @@
 model {
 
-  mu_g_ref_log ~ dnorm(0,1) #overall average in risk taking
-  delta_g_ref ~ dnorm(0,1) # group difference in risk taking
+  mu_g_ref_log ~ dnorm(0,1) # overall prior for mean of gamma (risk propensity)
+  delta_g_ref ~ dnorm(0,1) # overall prior for difference in gamma (risk propensity)
 
-  mu_tau_log ~ dnorm(0,1) # overall average in consistency (for all subjects)
-  delta_tau ~ dnorm(0,1) # group difference in consistency
+  mu_tau_log ~ dnorm(0,1) # overall group prior for mean of Tau (consistency)
+  delta_tau ~ dnorm(0,1) # overall prior for difference in tau (consistency)
 
   #------------------------------------------------------------------------------
   #-------------- Group A Priors ------------------------------------------------
@@ -35,7 +35,7 @@ model {
   B.shape_tau <- 1 + B.mu_tau * B.rate_tau
 
   #------------------------------------------------------------------------------
-  #--------- Variance Priors ----------------------------------------------------
+  #--------- Standard deviation / Variance Priors ----------------------------------------------------
   #------------------------------------------------------------------------------
   # variance priors for g_ref and tau parameters
   # Convert standard deviation in gamma distributions to precision
