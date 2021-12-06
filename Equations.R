@@ -5,8 +5,7 @@ library(knitr)
 # -------- Omega ----------------
 ### Interpreting the equation defining omega (number of cards considered optimal)
 # B.omega[k,t,s] <- -B.g_ref[s]/(log(1-B.p[k,t,s]))
-
-plot(-2/(log(1-seq(0,1,.01))))
+#  B.omega[t,s] <- -B.g_ref[s]/(log(1-B.p[t,s]))
 
 
 #Nicer plot
@@ -32,18 +31,24 @@ legend("right", inset=.02, title= expression(paste(gamma, " - Risk propensity"))
 # Interpreting the equation defining theta (probability of stopping the game/banking)
 
 # theta[k,t,s] <- 1-(1/(1+exp(tau[s]*k[t,s]-omega[k,t,s])))
-plot(1-(1/(1+exp(2*seq(1,10,1)-10))))
+plot(1-(1/(1+exp(1*seq(1,20,1)-10))))
+plot(1-(1/(1+exp(2*seq(1,20,1)-10))))
+
+
+# plot(seq(1,20,.01),1-(1/(1+exp(2*(seq(1,20,.01)-10)))))
+
 
 #Nicer plot
-plot(seq(1,15,.1),1-(1/(1+exp(2*seq(1,15,.1)-10))),type='l',lwd=2,col = 'blue',xlab="Number of card flips",ylab = expression(paste(theta," - Probability of banking")))
+plot(seq(1,20,.1),1-(1/(1+exp(2*seq(1,20,.1)-10))),type='l',lwd=2,col = 'blue',xlab="Number of card flips",ylab = expression(paste(theta," - Probability of ending the game")))
 lines(seq(1,15,.1),1-(1/(1+exp(1.5*seq(1,15,.1)-10))), col = "orange",lwd =2)
-lines(seq(1,15,.1),1-(1/(1+exp(1*seq(1,15,.1)-10))), col = "purple",lwd =2)
+lines(seq(1,15,.1), 1- (1/(1+exp(1*seq(1,15,.1)-10))), col = "purple",lwd =2)
 
 # Adding a legend
 attach(mtcars)
 
 legend("right", inset=.02, title= expression(paste(tau, " - Consistency")),
        c("2","1.5","1"), fill = c("blue", "orange", "purple"), horiz=TRUE, cex=0.8, bty = "n")
+legend("bottomright", inset = .05, c(expression(omega, "= 10 ")), cex = 0.8)
 
 # The closer we get to our optimal number of cards (omega) (which is set to be 10 for all graphs),
 # the higher is the probability that a person will bank/stop flipping cards and thereby saving the money they have earned.

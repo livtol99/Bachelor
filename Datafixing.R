@@ -63,3 +63,15 @@ dat <- read.csv("readytorun.csv")
 dat %>%  group_by(Study_Group) %>% summarise(count = n_distinct(ID))
 
 unique(dat$CCT_Task_Type) # Both conditions are included, so be aware of specifying this when running the model
+
+
+
+traceplot(teenvscontrols.ttest.samples)
+
+
+teenvscontrols.ttest.samples
+
+pacman::p_load(mcmcr)
+
+
+plot(as.mcmc(teenvscontrols.ttest.samples$BUGSoutput$sims.list$A.mu_g_ref))
