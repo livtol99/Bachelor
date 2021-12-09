@@ -345,13 +345,15 @@ teensvscrack.ttest.samples
 
 
 # Plotting credible intervals
+# Try to remove the upper graph line
 MCMCplot(controlsvsteens.ttest.samples, 
          params = c("delta_g_ref", "delta_tau"),
          labels = c("Delta Gamma", "Delta Tau"),
          ci = c(.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
-         main = " Controls vs. Teens")
+         main = " Controls vs. Teens",
+         guide_axis = F)
 
 
 MCMCplot(controlsvscrack.ttest.samples, 
@@ -360,7 +362,8 @@ MCMCplot(controlsvscrack.ttest.samples,
          ci = c(.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
-         main = " Controls vs. Crack Users")
+         main = " Controls vs. Crack Users",
+         guide_axis = F)
 
 MCMCplot(teensvscrack.ttest.samples, 
          params = c("delta_g_ref", "delta_tau"),
@@ -368,8 +371,8 @@ MCMCplot(teensvscrack.ttest.samples,
          ci = c(0.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
-         main = " Teens vs. Crack Users")
-
+         main = " Teens vs. Crack Users",
+         guide_axis = F)
 
 
 ?MCMCplot
