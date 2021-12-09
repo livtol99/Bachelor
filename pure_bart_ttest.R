@@ -353,17 +353,27 @@ MCMCplot(controlsvsteens.ttest.samples,
          ref_ovl = TRUE,
          rank = TRUE,
          main = " Controls vs. Teens",
-         guide_axis = F)
+         guide_axis = F,
+         sz_ax = 1,
+         xlab = "Estimate Value",
+         sz_ax_txt = 1,
+         sz_tick_txt = 1,
+         sz_labels = 1)
 
 
-MCMCplot(controlsvscrack.ttest.samples, 
+MCMCplot(controlsvscrack.ttest.samples,             # change scale on x-axis to match the others
          params = c("delta_g_ref", "delta_tau"),
          labels = c("Delta Gamma", "Delta Tau"),
          ci = c(.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
          main = " Controls vs. Crack Users",
-         guide_axis = F)
+         guide_axis = F,
+         sz_ax = 1,
+         xlab = "Estimate Value",
+         sz_ax_txt = 1,
+         sz_tick_txt = 1,
+         sz_labels = 1)
 
 MCMCplot(teensvscrack.ttest.samples, 
          params = c("delta_g_ref", "delta_tau"),
@@ -372,8 +382,13 @@ MCMCplot(teensvscrack.ttest.samples,
          ref_ovl = TRUE,
          rank = TRUE,
          main = " Teens vs. Crack Users",
-         guide_axis = F)
-
+         guide_axis = F,
+         sz_ax = 1,
+         xlab = "Estimate Value",
+         sz_ax_txt = 1,
+         sz_tick_txt = 1,
+         sz_labels = 1)
+# Endre navn på x-aksen
 
 ?MCMCplot
 # Trace plots
