@@ -1,11 +1,13 @@
 library(R2jags)
 library(dplyr)
+
+pacman::p_load(bayesplot, MCMCvis)
+
 # setwd("C:/Users/au199986/OneDrive - Aarhus Universitet/Courses/E21Theses/Liv")
 getwd()
 
-citation("R2jags")
+#citation("R2jags")
 
-citation()
 dat <- read.csv("readytorun.csv")
 
 dat %>%  group_by(Study_Group) %>% summarise(count = n_distinct(ID))
@@ -53,7 +55,7 @@ cont.nchoices <- array(0,c(ntrials,cont.nsubs))
 for (s in 1:cont.nsubs) {
   
   # make data matrices for one subject
-  sub_dat <- dat[dat$ID==cont.subID[s] & dat$CCT_Task_Type == "Hot1",]
+  sub_dat <- dat[dat$ID==cont.subID[s] & dat$CCT_Task_Type == "Hot2",]
   
   #- fill probability arrays, dependent on number of loss cards
   for (t in 1:ntrials) {
@@ -120,7 +122,7 @@ teen.nchoices <- array(0,c(ntrials,teen.nsubs))
 for (s in 1:teen.nsubs) {
   
   # make data matrices for one subject
-  sub_dat <- dat[dat$ID==teen.subID[s] & dat$CCT_Task_Type == "Hot1",]
+  sub_dat <- dat[dat$ID==teen.subID[s] & dat$CCT_Task_Type == "Hot2",]
   
   #- fill probability arrays, dependent on number of loss cards
   for (t in 1:ntrials) {
@@ -166,53 +168,6 @@ for (s in 1:teen.nsubs) {
 }
 
 #------------------------------------------------------------------------
-# ---------- Apply t.test: TEENS VERSUS CONTROLS ---------------------
-#------------------------------------------------------------------------
-
-A.p <- 1-cont.p[1,,]
-A.d <- cont.d
-A.v_loss <- cont.v_loss
-A.v_win <- cont.v_win
-A.nchoices <- cont.nchoices
-A.nsubs <- cont.nsubs
-
-B.p <- 1-teen.p[1,,]
-B.d <- teen.d
-B.v_loss <- teen.v_loss
-B.v_win <- teen.v_win
-B.nchoices <- teen.nchoices
-B.nsubs <- teen.nsubs
-
-B.nchoices[10,16] <- 31 # edge correction - can't make 32 choices
-
-data <- list("ntrials","A.nchoices","A.nsubs","A.p","A.d",
-             "B.nchoices","B.nsubs","B.p","B.d") #data inputted into jags
-
-params <- c("A.mu_tau_log","A.mu_g_ref_log","A.mu_tau","A.mu_g_ref",
-            "B.mu_tau_log","B.mu_g_ref_log","B.mu_tau","B.mu_g_ref",
-            "mu_tau_log","mu_g_ref_log","delta_tau","delta_g_ref") #parameters we'll track in jags
-
-teenvscontrols.ttest.samples <- jags(data, inits=NULL, params,
-                           model.file ="pure_bart_ttest.txt",
-                           n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
-
-#Looking at the output of the t-test
-
-
-teenvscontrols.ttest.samples
-
-traceplot(teenvscontrols.ttest.samples)
-
-# do density plots plot(density (samples)) plot prior together 
-# plot (density(rnorm(1000, 0, 1)))
-#traceplots ion appendix
-#rhat how well did the chains mix?
-# report rhgat
-pacman::p_load(mcmcr)
-
-
-plot(as.mcmc(teenvscontrols.ttest.samples))
-#------------------------------------------------------------------------
 # ---------- make data matrices for CRACK group --------------------------
 #------------------------------------------------------------------------
 
@@ -233,7 +188,7 @@ crac.nchoices <- array(0,c(ntrials,crac.nsubs))
 for (s in 1:crac.nsubs) {
   
   # make data matrices for one subject
-  sub_dat <- dat[dat$ID==crac.subID[s] & dat$CCT_Task_Type == "Hot1",]
+  sub_dat <- dat[dat$ID==crac.subID[s] & dat$CCT_Task_Type == "Hot2",]
   
   #- fill probability arrays, dependent on number of loss cards
   for (t in 1:ntrials) {
@@ -278,9 +233,52 @@ for (s in 1:crac.nsubs) {
   
 }
 
-#------------------------------------------------------------------------
-# ---------- Apply t.test to crack group ---------------------
-#------------------------------------------------------------------------
+
+########################################################################
+#------------------- All results together ------------------------------
+########################################################################
+
+
+####-----------T.tests-----------------####
+#------  Controls vs. teens --------
+
+A.p <- 1-cont.p[1,,]
+A.d <- cont.d
+A.v_loss <- cont.v_loss
+A.v_win <- cont.v_win
+A.nchoices <- cont.nchoices
+A.nsubs <- cont.nsubs
+
+B.p <- 1-teen.p[1,,]
+B.d <- teen.d
+B.v_loss <- teen.v_loss
+B.v_win <- teen.v_win
+B.nchoices <- teen.nchoices
+B.nsubs <- teen.nsubs
+
+#B.nchoices[10,16] <- 31 # edge correction - can't make 32 choices
+
+data <- list("ntrials","A.nchoices","A.nsubs","A.p","A.d",
+             "B.nchoices","B.nsubs","B.p","B.d") #data inputted into jags
+
+params <- c("A.mu_tau","A.mu_g_ref",
+            "B.mu_tau","B.mu_g_ref",
+            "mu_tau_log","mu_g_ref_log","delta_tau","delta_g_ref") #parameters we'll track in jags
+
+controlsvsteens.ttest.samples <- jags(data, inits=NULL, params,
+                                     model.file ="pure_bart_ttest.txt",
+                                     n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+
+
+## ---- Controls vs. crack --------###
+
+A.p <- 1-cont.p[1,,]
+A.d <- cont.d
+A.v_loss <- cont.v_loss
+A.v_win <- cont.v_win
+A.nchoices <- cont.nchoices
+A.nsubs <- cont.nsubs
+
 
 B.p <- 1-crac.p[1,,]
 B.d <- crac.d
@@ -294,12 +292,186 @@ B.nsubs <- crac.nsubs
 data <- list("ntrials","A.nchoices","A.nsubs","A.p","A.d",
              "B.nchoices","B.nsubs","B.p","B.d") #data inputted into jags
 
-params <- c("A.mu_tau_log","A.mu_g_ref_log","A.mu_tau","A.mu_g_ref",
-            "B.mu_tau_log","B.mu_g_ref_log","B.mu_tau","B.mu_g_ref",
+params <- c("A.mu_tau","A.mu_g_ref",
+            "B.mu_tau","B.mu_g_ref",
             "mu_tau_log","mu_g_ref_log","delta_tau","delta_g_ref") #parameters we'll track in jags
 
-crac.ttest.samples <- jags(data, inits=NULL, params,
-                           model.file ="pure_bart_ttest.txt",
-                           n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+controlsvscrack.ttest.samples <- jags(data, inits=NULL, params,
+                                     model.file ="pure_bart_ttest.txt",
+                                     n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+
+
+
+## ---------Teens vs. Crack---------###
+A.p <- 1-teen.p[1,,]
+A.d <- teen.d
+A.v_loss <- teen.v_loss
+A.v_win <- teen.v_win
+A.nchoices <- teen.nchoices
+A.nsubs <- teen.nsubs
+
+B.p <- 1-crac.p[1,,]
+B.d <- crac.d
+B.v_loss <- crac.v_loss
+B.v_win <- crac.v_win
+B.nchoices <- crac.nchoices
+B.nsubs <- crac.nsubs
+
+
+#B.nchoices[10,16] <- 31 # edge correction - can't make 32 choices
+
+data <- list("ntrials","A.nchoices","A.nsubs","A.p","A.d",
+             "B.nchoices","B.nsubs","B.p","B.d") #data inputted into jags
+
+params <- c("A.mu_tau","A.mu_g_ref",
+            "B.mu_tau","B.mu_g_ref",
+            "mu_tau_log","mu_g_ref_log","delta_tau","delta_g_ref") #parameters we'll track in jags
+
+teensvscrack.ttest.samples <- jags(data, inits=NULL, params,
+                                  model.file ="pure_bart_ttest.txt",
+                                  n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+
+
+
+##################################################################3
+###----------- Output of the t-tests ---------------####
+######################################################################
+
+controlsvsteens.ttest.samples
+
+controlsvscrack.ttest.samples
+
+teensvscrack.ttest.samples
+
+
+# Plotting credible intervals
+MCMCplot(controlsvsteens.ttest.samples, 
+         params = c("delta_g_ref", "delta_tau"),
+         labels = c("Delta Gamma", "Delta Tau"),
+         ci = c(.01, 95),
+         ref_ovl = TRUE,
+         rank = TRUE,
+         main = " Controls vs. Teens")
+
+
+MCMCplot(controlsvscrack.ttest.samples, 
+         params = c("delta_g_ref", "delta_tau"),
+         labels = c("Delta Gamma", "Delta Tau"),
+         ci = c(.01, 95),
+         ref_ovl = TRUE,
+         rank = TRUE,
+         main = " Controls vs. Crack Users")
+
+MCMCplot(teensvscrack.ttest.samples, 
+         params = c("delta_g_ref", "delta_tau"),
+         labels = c("Delta Gamma", "Delta Tau"),
+         ci = c(0.01, 95),
+         ref_ovl = TRUE,
+         rank = TRUE,
+         main = " Teens vs. Crack Users")
+
+
+
+?MCMCplot
+# Trace plots
+#MCMCsummary(controlsvsteens.ttest.samples, round = 3)
+
+MCMCtrace(controlsvsteens.ttest.samples,     # controls and teens
+          ISB = FALSE, 
+          exact = TRUE,
+          Rhat = TRUE)
+
+MCMCtrace(controlsvscrack.ttest.samples,  # controls and crack users
+          ISB = FALSE, 
+          exact = TRUE,
+          Rhat = TRUE)
+
+MCMCtrace(teensvscrack.ttest.samples,    # teens and crack users
+          ISB = TRUE, 
+          exact = TRUE,
+          Rhat = TRUE)
+
+# Desnity plots with prior and posterior together
+PR <- dnorm(0,1) #prior for delta for both tau and Gamma
+
+# Density plots
+#plot(density(rnorm(1000,0,1))) #prior
+#lines(density(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_tau), col = 'blue') #posterior
+
+#Maybe the prior is not correct here?
+
+MCMCtrace(controlsvsteens.ttest.samples,        # Controls and teens
+          params = c("delta_g_ref", "delta_tau"),
+          exact = TRUE,
+          ISB = FALSE,
+          type = 'density',
+          priors = PR,
+          pdf = FALSE,
+          Rhat = TRUE)
+    
+MCMCtrace(controlsvscrack.ttest.samples,        # Controls and crack users
+          params = c("delta_g_ref", "delta_tau"),
+          exact = TRUE,
+          ISB = FALSE,
+          type = 'density',
+          priors = PR,
+          pdf = FALSE,
+          Rhat = TRUE)
+
+
+MCMCtrace(teensvscrack.ttest.samples,
+          params = c("delta_g_ref", "delta_tau"),
+          exact = TRUE,
+          ISB = FALSE,
+          type = 'density',
+          priors = PR,
+          pdf = FALSE,
+          Rhat = TRUE)
+
+
+# use exp(posterior) to change from log to linear space
+
+##### Bayes Factor for delta
+pacman::p_load(logspline)
+
+prior <- dnorm(0,1) #prior for delta for both tau and Gamma
+
+
+## Controls vs. teens
+# delta gamma = 0.569 Anectodal evidence for H0
+fit.posterior <- logspline(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
+
+# delta tau = 3.00 Moderate evidence for H1
+fit.posterior <- logspline(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_tau)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
+
+
+## Controls vs. crack users
+# delta gamma = 3370.592 Extreme evidence for H1
+fit.posterior <- logspline(controlsvscrack.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
+
+
+# Delta tau = 3.49 Moderate evidence for H1
+fit.posterior <- logspline(controlsvscrack.ttest.samples$BUGSoutput$sims.list$delta_tau)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
+
+
+## Teens vs. Crack users
+
+# delta gamma = 0.5407 Anectodal evidence for H0 
+fit.posterior <- logspline(teensvscrack.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
+
+# Delta tau = 0.2975   Moderate evidence for H0
+fit.posterior <- logspline(teensvscrack.ttest.samples$BUGSoutput$sims.list$delta_tau)
+posterior <- dlogspline(0, fit.posterior) # this gives the pdf at point delta = 0 using a logspline fit
+BF <- prior/posterior # the ratio of the prior to the posterior at the value for zero – how confident you are that there is an effect
 
 
