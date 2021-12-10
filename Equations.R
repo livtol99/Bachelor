@@ -45,4 +45,36 @@ legend("right", inset=.02, title= expression(paste(tau, " - Consistency")),
 legend("bottom", inset = .05, title = expression(paste(omega, " = ")), c("10       "), horiz = TRUE,cex = 0.7, bty = "s")
 
 
-?bty
+########-------------------------------------------
+##### Plots with actual values 
+
+# Median gamma crack 8.07
+# Median control gamma 1.877
+
+# Omega
+#  B.omega[t,s] <- -B.g_ref[s]/(log(1-B.p[t,s]))
+plot(seq(0,1,.03),-8.07/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "blue",xlab="Probability of a loss",ylab = expression(paste(omega, " - Number of pumps considered optimal")))
+lines(seq(0,1,.03),-1.87/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "orange")
+
+legend("right", inset=.02, title= expression(paste(gamma, " - Risk propensity median value")),
+       c("Crack Users (8.07)","Controls (1.87)"), fill = c("blue", "orange"), horiz=F, cex=0.8, bty = "n")
+
+
+##### Theta 
+# Median control tau 1.1267
+# Median tau crack 1.042
+
+
+# theta[k,t,s] <- 1-(1/(1+exp(tau[s]*k[t,s]-omega[k,t,s])))
+
+# nicer plot no bug
+plot(seq(5,15,.01),1-(1/(1+exp(1.13*(seq(5,15,.01)-10)))),type = 'l', lwd = 2, col = 'blue', xlab = "Number of card flips", ylab = expression(paste(theta," - Probability of ending the game")))
+lines(seq(5,15,.01),1-(1/(1+exp(1.04*(seq(5,15,.01)-10)))), col = "orange", lwd=2)
+
+# Adding a legend
+legend("right", inset=.02, title= expression(paste(tau, " - Consistency median value")),
+       c("Controls (1.13)","Crack Users (1.04)"), fill = c("blue", "orange", "purple"), horiz=F, cex=0.8, bty = "n")
+
+legend("bottom", inset = .05, title = expression(paste(omega, " = ")), c("10       "), horiz = T,cex = 0.7, bty = "s")
+
+controlsvscrack.ttest.samples

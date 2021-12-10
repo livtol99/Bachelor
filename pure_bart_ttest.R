@@ -267,7 +267,7 @@ params <- c("A.mu_tau","A.mu_g_ref",
 
 controlsvsteens.ttest.samples <- jags(data, inits=NULL, params,
                                      model.file ="pure_bart_ttest.txt",
-                                     n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+                                     n.chains=4, n.iter=5000, n.burnin=1000, n.thin=1)
 
 
 ## ---- Controls vs. crack --------###
@@ -298,7 +298,7 @@ params <- c("A.mu_tau","A.mu_g_ref",
 
 controlsvscrack.ttest.samples <- jags(data, inits=NULL, params,
                                      model.file ="pure_bart_ttest.txt",
-                                     n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+                                     n.chains=4, n.iter=5000, n.burnin=1000, n.thin=1)
 
 
 
@@ -329,7 +329,7 @@ params <- c("A.mu_tau","A.mu_g_ref",
 
 teensvscrack.ttest.samples <- jags(data, inits=NULL, params,
                                   model.file ="pure_bart_ttest.txt",
-                                  n.chains=3, n.iter=5000, n.burnin=1000, n.thin=1)
+                                  n.chains=4, n.iter=5000, n.burnin=1000, n.thin=1)
 
 
 
@@ -344,28 +344,29 @@ controlsvscrack.ttest.samples
 teensvscrack.ttest.samples
 
 
+
 # Plotting credible intervals
 # Try to remove the upper graph line
-MCMCplot(controlsvsteens.ttest.samples, 
+MCMCplot(controlsvsteens.ttest.samples,
          params = c("delta_g_ref", "delta_tau"),
-         labels = c("Delta Gamma", "Delta Tau"),
+         labels = c(expression(paste(delta,gamma)), expression(paste(delta, Tau))),
          ci = c(.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
-         main = " Controls vs. Teens",
+         main = " Controls vs. Adolescents",
          guide_axis = F,
          sz_ax = 1,
          xlab = "Estimate Value",
          sz_ax_txt = 1,
          sz_tick_txt = 1,
-         sz_labels = 1)
+         sz_labels = 1.1,
+         xlim = c(-3,3))
 
-
-MCMCplot(controlsvscrack.ttest.samples,             # change scale on x-axis to match the others
+MCMCplot(controlsvscrack.ttest.samples,
          params = c("delta_g_ref", "delta_tau"),
-         labels = c("Delta Gamma", "Delta Tau"),
+         labels = c(expression(paste(delta,gamma)), expression(paste(delta, Tau))),
          ci = c(.01, 95),
-         ref_ovl = TRUE,
+         col = c('blue', 'blue'),
          rank = TRUE,
          main = " Controls vs. Crack Users",
          guide_axis = F,
@@ -373,24 +374,27 @@ MCMCplot(controlsvscrack.ttest.samples,             # change scale on x-axis to 
          xlab = "Estimate Value",
          sz_ax_txt = 1,
          sz_tick_txt = 1,
-         sz_labels = 1)
+         sz_labels = 1.1,
+         xlim = c(-3,3))
 
-MCMCplot(teensvscrack.ttest.samples, 
+MCMCplot(teensvscrack.ttest.samples,
          params = c("delta_g_ref", "delta_tau"),
-         labels = c("Delta Gamma", "Delta Tau"),
-         ci = c(0.01, 95),
+         labels = c(expression(paste(delta,gamma)), expression(paste(delta, Tau))),
+         ci = c(.01, 95),
          ref_ovl = TRUE,
          rank = TRUE,
-         main = " Teens vs. Crack Users",
+         main = "Adolescents vs. Crack Users",
          guide_axis = F,
          sz_ax = 1,
          xlab = "Estimate Value",
          sz_ax_txt = 1,
          sz_tick_txt = 1,
-         sz_labels = 1)
-# Endre navn på x-aksen
+         sz_labels = 1.1,
+         xlim = c(-3,3))
 
-?MCMCplot
+
+
+controlsvscrack.ttest.samples
 # Trace plots
 #MCMCsummary(controlsvsteens.ttest.samples, round = 3)
 
@@ -408,6 +412,58 @@ MCMCtrace(teensvscrack.ttest.samples,    # teens and crack users
           ISB = TRUE, 
           exact = TRUE,
           Rhat = TRUE)
+
+#Converting mean values to linear apce
+teens_mu_gamma<- exp(teensvscrack.ttest.samples$BUGSoutput$sims.list$A.mu_g_ref)
+teens_mu_tau <- exp(teensvscrack.ttest.samples$BUGSoutput$sims.list$A.mu_tau)
+
+crack_mu_gamma <- exp(controlsvscrack.ttest.samples$BUGSoutput$sims.list$B.mu_g_ref)
+crack_mu_tau <- exp(controlsvscrack.ttest.samples$BUGSoutput$sims.list$B.mu_tau)
+
+control_mu_gamma <- exp(controlsvscrack.ttest.samples$BUGSoutput$sims.list$A.mu_g_ref)
+control_mu_tau <- exp(controlsvscrack.ttest.samples$BUGSoutput$sims.list$A.mu_tau)
+
+
+crack_mu_gamma <- exp(teensvscrack.ttest.samples$BUGSoutput$sims.list$B.mu_g_ref)
+median(crack_mu_gamma)   # Median gamma crack 8.07
+median(control_mu_gamma) # Median control gamma 1.877
+
+median(crack_mu_tau)     # Median tau crack 1.042
+median(control_mu_tau)   # Median control tau 1.1267
+
+
+
+# Median gamma crack 8.07
+# Median control gamma 1.877
+
+# Median tau crack 1.042
+# Median control tau 1.1267
+
+median(teens_mu_gamma)   # Median gamma teens 3.7837
+median(teens_mu_tau)     # Median tau teens 1.035
+
+
+# Density and convergence plots for delta
+MCMCtrace(controlsvsteens.ttest.samples,
+          params = c("delta_g_ref", "delta_tau"),
+          ISB = FALSE,
+          exact = TRUE,
+          Rhat = TRUE,
+          pdf = FALSE)
+
+MCMCtrace(controlsvscrack.ttest.samples,
+          params = c("delta_g_ref", "delta_tau"),
+          ISB = FALSE,
+          exact = TRUE,
+          Rhat = TRUE,
+          pdf = FALSE)
+
+MCMCtrace(teensvscrack.ttest.samples,
+          params = c("delta_g_ref", "delta_tau"),
+          ISB = FALSE,
+          exact = TRUE,
+          Rhat = TRUE,
+          pdf = FALSE)
 
 # Desnity plots with prior and posterior together
 PR <- dnorm(0,1) #prior for delta for both tau and Gamma
