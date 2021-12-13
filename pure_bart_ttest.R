@@ -341,10 +341,10 @@ controlsvsteens.ttest.samples
 
 controlsvscrack.ttest.samples
 
-teensvscrack.ttest.samples
+0teensvscrack.ttest.samples
 
 
-
+?jags
 #### Credible intervals#####3
 MCMCplot(controlsvsteens.ttest.samples,
          params = c("delta_g_ref", "delta_tau"),
@@ -398,15 +398,24 @@ controlsvscrack.ttest.samples
 ############
 # PRIOR PLOT MUST BE FIXED HERE!
 # Density plots with prior and posterior together
+pacman::p_load(BiocManager)
+pacman::p_load(savage_dickey)
+
+
+?dnorm
 prior <- dnorm(0,0,1)
 
-#lines(density(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_tau), col = 'blue') #posterior
 
+#lines(density(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_tau), col = 'blue') #posterior
+?MCMCtrace
+
+prior <- dnorm(20000,0,1)
 
 MCMCtrace(controlsvsteens.ttest.samples,        # Controls and teens, delta gamma
           params = c("delta_g_ref"),
           exact = TRUE,
-          ISB = FALSE,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
@@ -415,7 +424,9 @@ MCMCtrace(controlsvsteens.ttest.samples,        # Controls and teens, delta gamm
 MCMCtrace(controlsvsteens.ttest.samples,        # Controls and teens, delta tau
           params = c("delta_tau"),
           exact = TRUE,
-          ISB = FALSE,
+          iter = 4000,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
@@ -426,7 +437,9 @@ MCMCtrace(controlsvsteens.ttest.samples,        # Controls and teens, delta tau
 MCMCtrace(controlsvscrack.ttest.samples,        # Controls and crack users, delta gamma
           params = c("delta_g_ref"),
           exact = TRUE,
-          ISB = FALSE,
+          iter = 4000,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
@@ -436,7 +449,9 @@ MCMCtrace(controlsvscrack.ttest.samples,        # Controls and crack users, delt
 MCMCtrace(controlsvscrack.ttest.samples,        # Controls and crack users, delta tau
           params = c("delta_tau"),
           exact = TRUE,
-          ISB = FALSE,
+          iter = 4000,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
@@ -445,7 +460,9 @@ MCMCtrace(controlsvscrack.ttest.samples,        # Controls and crack users, delt
 MCMCtrace(teensvscrack.ttest.samples,           # Teens vs crack, delta gamma
           params = c("delta_g_ref"),
           exact = TRUE,
-          ISB = FALSE,
+          iter = 4000,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
@@ -454,12 +471,14 @@ MCMCtrace(teensvscrack.ttest.samples,           # Teens vs crack, delta gamma
 MCMCtrace(teensvscrack.ttest.samples,           # Teens vs crack, delta tau
           params = c("delta_tau"),
           exact = TRUE,
-          ISB = FALSE,
+          iter = 4000,
+          post_zm = FALSE,
+          col_pr = 'purple',
           type = 'density',
           priors = prior,
           pdf = FALSE,
           Rhat = TRUE)
-
+plot(density(prior))
 
 
 # MCMC table
@@ -468,6 +487,7 @@ MCMCsummary(controlsvscrack.ttest.samples, round = 2,
             params = c("A.mu_g_ref", "A.mu_tau", "B.mu_g_ref", "B.mu_tau", "delta_g_ref", "delta_tau"),
             n.eff = F)
 
+?MCMCsummary
 
 ##### Bayes Factor for delta
 pacman::p_load(logspline)
@@ -485,44 +505,39 @@ prior <- dnorm(0,0,1) #prior for delta for both tau and Gamma
 
 
 ## Controls vs. teens
-# delta gamma = 1.041 (Not worth more than a bare mention)
+# delta gamma = 0.926 (Not worth more than a bare mention)
 fit.posterior <- logspline(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
 
 
-# delta tau = 4.811 (Substansial evidence for there being a difference, H1. Worth talking about)
+# delta tau = 4.606 (Substansial evidence for there being a difference, H1. Worth talking about)
 fit.posterior <- logspline(controlsvsteens.ttest.samples$BUGSoutput$sims.list$delta_tau)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
 
-
 ## Controls vs. crack users
-# delta gamma = 12733.76 (Decisive evidence for H1)
+# delta gamma = 1549.037 (Decisive evidence for H1)
 fit.posterior <- logspline(controlsvscrack.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
 
-# Delta tau = 4.499 (Susbtantial evidence for)
+# Delta tau = 5.173 (Susbtantial evidence for H1)
 fit.posterior <- logspline(controlsvscrack.ttest.samples$BUGSoutput$sims.list$delta_tau)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
 
 ## Teens vs. Crack users
 
-# delta gamma = (0.897, more in favour of H0)
+# delta gamma = (0.938, more in favour of H0)
 fit.posterior <- logspline(teensvscrack.ttest.samples$BUGSoutput$sims.list$delta_g_ref)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
 
-# delta tau = (0.455, more in favour of H0)
+# delta tau = (0.479, more in favour of H0)
 fit.posterior <- logspline(teensvscrack.ttest.samples$BUGSoutput$sims.list$delta_tau)
 posterior <-  dlogspline(0, fit.posterior)
 BF <- prior/posterior
-
-
-
-
 
 
 
