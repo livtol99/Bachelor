@@ -10,7 +10,7 @@ attach(mtcars)
 
 
 #Nicer plot
-plot(seq(0,1,.03),-2/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "blue",xlab="Probability of a loss",ylab = expression(paste(omega, " - Number of pumps considered optimal")))
+plot(seq(0,1,.03),-2/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "blue",xlab="Probability of a loss",ylab = expression(paste(omega, " - Number of card flips considered optimal")))
 lines(seq(0,1,.03),-1/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "orange")
 lines(seq(0,1,.03),-0.5/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "purple")
 
@@ -53,7 +53,7 @@ legend("bottom", inset = .05, title = expression(paste(omega, " = ")), c("10    
 
 # Omega
 #  B.omega[t,s] <- -B.g_ref[s]/(log(1-B.p[t,s]))
-plot(seq(0,1,.03),-2.11/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "blue",xlab="Probability of a loss",ylab = expression(paste(omega, " - Number of pumps considered optimal")))
+plot(seq(0,1,.03),-2.11/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "blue",xlab="Probability of a loss",ylab = expression(paste(omega, " - Number of card flips considered optimal")))
 lines(seq(0,1,.03),-0.62/(log(1-seq(0,1,.03))),type='l',lwd=2, col = "orange")
 
 legend("right", inset=.02, title= expression(paste(gamma, " - Risk propensity mean value")),
