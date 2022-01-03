@@ -3,7 +3,8 @@ library(dplyr)
 library(knitr)
 attach(mtcars)
 
-# -------- Omega ----------------
+
+## -------- Omega ----------------
 ### Interpreting the equation defining omega (number of cards considered optimal)
 # B.omega[k,t,s] <- -B.g_ref[s]/(log(1-B.p[k,t,s]))
 #  B.omega[t,s] <- -B.g_ref[s]/(log(1-B.p[t,s]))

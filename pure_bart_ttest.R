@@ -3,9 +3,9 @@ library(dplyr)
 
 pacman::p_load(bayesplot, MCMCvis)
 
-getwd()
 
-#citation("R2jags")
+
+##citation("R2jags")
 
 dat <- read.csv("readytorun.csv")
 
